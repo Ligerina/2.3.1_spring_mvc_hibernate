@@ -2,10 +2,9 @@ package web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import web.model.User;
 import web.service.UserService;
 
@@ -20,26 +19,40 @@ public class UserController {
     @GetMapping(value = "/")
     public String printWelcome(ModelMap model) {
         List<User> userList = userService.getListUser();
-
         model.addAttribute("UserList", userList);
-        return "Users";
+        return "StartPage";
     }
 
-    @RequestMapping("/addUser")
-    public String addNewUser(ModelMap model){
-
+    @RequestMapping(value = "/addNewUser1")
+    public String addNewUser(Model model) {
         User user = new User();
-        model.addAttribute("user1",user);
-
-        return "AddUser";
+        model.addAttribute("User",user);
+        return "UserInfo";
     }
 
-    @RequestMapping("/saveUser")
-    public String saveUser(@ModelAttribute("User") User user){
-
-        userService.addUser(user.getName(),user.getSurname(),user.getDepartment(),user.getLocation());
-
-        return "/";
+    @PostMapping()
+    public String AddingPerson(@ModelAttribute("User") User user) {
+        if(user.getId()==null){
+            userService.addUser(user.getName(),user.getSurname(),user.getDepartment(),user.getLocation());
+        } else {
+            userService.updateUser(user);
+        }
+        return "redirect:/";
     }
+
+    @GetMapping(value = "/updUser/{id}")
+    public String updUser(@PathVariable("id") Long id, Model model) {
+        User user = userService.getUser(id);
+        model.addAttribute("User",user);
+        return "UserInfo";
+    }
+
+    @GetMapping(value = "/deleteUser/{id}")
+    public String deleteUser(@PathVariable("id") Long id, Model model) {
+        User user = userService.getUser(id);
+        userService.deleteUser(user);
+        return "redirect:/";
+    }
+
 
 }
